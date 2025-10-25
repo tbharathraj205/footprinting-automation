@@ -113,7 +113,7 @@
         },
         {
         "parameters": {
-            "content": "## Webhook GET nodes\n**GET from the webpage** . ",
+            "content": "## Webhook GET nodes\n**GET from the webpage/index.html** . ",
             "height": 592,
             "width": 256
         },

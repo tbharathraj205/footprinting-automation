@@ -151,4 +151,4 @@ If you like this project:
 
 💡 Suggest improvements
 
-Footprinting made simple — Automated, Intelligent, and Ethical 🔍
+Footprinting Automation made simple — Automated, Intelligent, and Ethical 🔍
