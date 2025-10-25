@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Cybersecurity Project</title>
+  <style>
+    body { margin:0; height:100vh; display:flex; justify-content:center; align-items:center; font-family:Arial,sans-serif; overflow:hidden; background:#000; }
+    canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; background:black; }
+    .container { text-align:center; background:rgba(0,0,0,0.75); padding:30px; border-radius:12px; box-shadow:0 6px 15px rgba(0,255,0,0.12); backdrop-filter:blur(5px); color:#00ff99; max-width:80%; z-index:1; }
+    h2 { margin-bottom:15px; color:#00ffcc; }
+    input[type="text"] { padding:10px; width:300px; font-size:16px; border:1px solid #00ffcc; border-radius:5px; outline:none; background:#000; color:#00ffcc; }
+    input[type="text"]:focus { border-color:#00ff99; box-shadow:0 0 10px rgba(0,255,153,0.12); }
+    button { margin-top:15px; padding:10px 20px; font-size:16px; color:black; background:#00ffcc; border:none; border-radius:5px; cursor:pointer; transition:0.2s; }
+    button:hover { background:#00b386; transform:scale(1.03); }
+    #responseBox { margin-top:20px; padding:20px; background:rgba(0,0,0,0.6); border-radius:10px; color:#00ffcc; max-height:60vh; overflow-y:auto; text-align:left; white-space:pre-wrap; }
+    #status { margin-top:10px; font-size:13px; color:#aaffd6; }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+
+  <div class="container" role="main">
+    <h2>Enter your domain (example.com)</h2>
+
+    <form id="cyberForm" onsubmit="return false;" aria-label="Domain input form">
+      <input id="domainInput" name="myText" type="text" placeholder="Type here..." aria-label="Domain name" />
+      <br />
+      <button id="submitBtn" type="button">Submit</button>
+    </form>
+
+    <div id="status" aria-live="polite"></div>
+    <div id="responseBox" aria-live="polite"></div>
+  </div>
+
+  <script>
+    /* Matrix background */
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; setup(); }
+    window.addEventListener('resize', resize);
+    let fontSize = 16, columns = 0, drops = [];
+    const letters = '01';
+    function setup() {
+      fontSize = 16;
+      columns = Math.floor(canvas.width / fontSize);
+      drops = new Array(columns).fill(1);
+    }
+    resize();
+    function draw() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#0F0';
+      ctx.font = fontSize + 'px monospace';
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters.charAt(Math.floor(Math.random()*letters.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }
+    setInterval(draw, 33);
+
+    /* Form handling -> send JSON to n8n webhook */
+    const submitBtn = document.getElementById('submitBtn');
+    const domainInput = document.getElementById('domainInput');
+    const responseBox = document.getElementById('responseBox');
+    const statusEl = document.getElementById('status');
+
+    // << REPLACE THIS with your actual n8n webhook URL >>
+    const N8N_WEBHOOK = "<< REPLACE THIS with your actual n8n webhook URL >>";
+
+    function showStatus(text) { statusEl.textContent = text; }
+    function showError(text) { responseBox.innerHTML = "<span style='color:#ff6b6b'>" + text + "</span>"; }
+
+    submitBtn.addEventListener('click', async () => {
+      const domain = domainInput.value.trim();
+      responseBox.innerHTML = "";
+      if (!domain) { showStatus("Please enter a domain like example.com"); return; }
+
+      // Prepare JSON body that matches the workflow expectation { "myText": "domain" }
+      const body = { myText: domain };
+
+      try {
+        showStatus("Sending scan request...");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Working...";
+
+        const res = await fetch(N8N_WEBHOOK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          credentials: "omit" // change if your n8n needs cookies/auth
+        });
+
+        // the webhook returns HTML — show it raw
+        if (!res.ok) {
+          const errText = await res.text().catch(()=>res.statusText);
+          throw new Error("Server returned " + res.status + " — " + errText);
+        }
+
+        const text = await res.text();
+        responseBox.innerHTML = text;
+        showStatus("Done. Review the dashboard below.");
+      } catch (err) {
+        console.error(err);
+        showStatus("Error: see details below.");
+        showError(err.message || String(err));
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit";
+      }
+    });
+  </script>
+</body>
+</html>
