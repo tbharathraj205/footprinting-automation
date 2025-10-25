@@ -1,0 +1,394 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sample",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1280,
+        -80
+      ],
+      "id": "a91441c4-c547-4c37-ab39-52983348eaf2",
+      "name": "Webhook",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        400,
+        -80
+      ],
+      "id": "b9b9949b-f341-42fb-ada4-7e0e71b181fa",
+      "name": "Respond to Webhook",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -608,
+        -112
+      ],
+      "id": "41c6653a-ecbc-4a6c-85f7-efe297c65555",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.combinedText }}",
+        "options": {
+          "systemMessage": "=You are a helpful assistant that converts raw Nmap + traceroute output into a single, standalone HTML dashboard (inline CSS only, no external assets). Use *all* details provided in the input verbatim (timestamps, server/resolver lines, IPs, other addresses, port counts, per-port lines, traceroute hops, etc.). Do not remove or invent scan details; only enrich and format them.\n\nRequirements:\n1. Output: a complete HTML document (<!doctype html> ... </html>) that renders a modern dark-themed dashboard suitable for review.\n2. Styling: use inline CSS only. Keep the design clean and professional (dark dashboard colors), responsive, with readable fonts. Include subtle shadows/borders and accessible color contrast. Use a monospace block for raw traceroute and DNS sections.\n3. Header: title with scanned domain and primary IP, scan tool/version and timestamp (use the exact lines from input).\n4. Use a table to show **open ports** (columns: Port, State, Service, Notes). Populate rows from the scan lines (e.g., \"21/tcp open ftp\", etc.). For Notes, add short layman-language observations derived only from the service name (do not guess software banner versions).\n5. DNS & Addresses: show resolver/server line and all address mappings exactly as in the input (e.g., \"uniteaminterior.com → 145.79.211.179\" and the IPv6).\n6. Traceroute: include a readable \"raw\" traceroute block and a short plain-language summary (1–2 sentences) describing what the traceroute indicates (e.g., internal hops, ISP transit, many hops filtered).\n7. Vulnerabilities section: list possible vulnerabilities **in layman language** for each open service visible in the scan. Keep statements conservative and framed as *possible* risks based only on the fact that the port/service is open. Example phrasings: \n    - \"FTP (21): If anonymous login or plain FTP is used, attackers could upload or steal files; FTP also sends passwords unencrypted.\"\n    - \"HTTP (80): Unencrypted traffic — visitors' data could be intercepted if not redirected to HTTPS.\"\n    - \"HTTPS (443): Encrypted, but check certificate and TLS settings — weak/expired certs or old ciphers are risks.\"\n    - \"MySQL (3306): Publicly exposed database port — risk if firewall/strong passwords aren't in place.\"\n8. Scoring: compute a deterministic security score (0–100) and display it as a progress bar plus a textual rating. Use a simple algorithm so results are reproducible:\n    - Start at 85.\n    - Subtract 12 points if MySQL (3306) is open.\n    - Subtract 8 points if FTP (21) is open.\n    - Subtract 6 points if HTTP (80) is open (unless you detect a note that it is redirecting to HTTPS — only use that if provided in input).\n    - Subtract 0 points for HTTPS (443) being open; subtract 5 points if there is an explicit mention of certificate or TLS issues in the input.\n    - Ensure the final score is clamped between 0 and 100.\n    - Map score to a label: 0–39 \"High Risk\", 40–64 \"Moderate Risk\", 65–84 \"Low Risk\", 85–100 \"Good\".\n    - Show the calculation summary (which deductions applied) in a small block so reviewer sees why the score was computed.\n9. Progress bar: render a horizontal progress bar with the numeric percentage inside the bar. Color gradient should reflect risk (red/orange for low scores -> green for high). Also show textual rating label (e.g., \"65% — Moderate Risk\") and the numeric score for screen readers (aria attributes).\n10. Checklist / Immediate Actions: provide 3–6 short, practical next steps (layman language), e.g., \"Restrict MySQL to trusted IPs\", \"Disable anonymous FTP or move to SFTP/FTPS\", \"Enable HTTP → HTTPS redirection and HSTS\", \"Scan TLS certificate and ciphers\".\n11. Accessibility & Safety: include aria attributes on the progress bar and use semantic headings and table markup.\n12. Use the user's preference: explain any technical term or recommendation briefly in layman language (one sentence max) wherever it helps.\n\nInput: the assistant will receive raw text containing:\n- Nmap header lines (tool + timestamp).\n- Nmap scan report lines (domain, IP, latency).\n- \"Not shown\" summary lines about filtered/closed ports.\n- Per-port lines showing port/service/state.\n- DNS resolver/server lines and address mappings.\n- Full traceroute output.\n\nBehavior:\n- Use the above input as the authoritative source of facts. Do not fetch data from the web, do not invent banners/versions, do not add findings beyond what the input implies.\n- If the input mentions counts (e.g., \"962 filtered tcp ports, 34 closed\"), display them exactly in the dashboard.\n- Keep output HTML compact but readable and self-contained.\n\nExample output expectations (short): a dark dashboard HTML file that includes:\n- Header with domain, IP, scan time.\n- \"Open Ports\" table populated with the four open ports from the scan.\n- DNS section listing addresses.\n- Traceroute raw block + short summary.\n- Vulnerabilities list (layman language).\n- Deterministic score calculation block.\n- Progress bar + textual rating label.\n- Short \"Immediate Actions\" checklist.\n\nNow: read the input (raw Nmap + traceroute text provided), and produce the standalone HTML dashboard described above, using every detail from the input."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        -80
+      ],
+      "id": "1464c4f1-1d89-48ca-8ef1-ee2e8553ba31",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-nano"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        160
+      ],
+      "id": "6006eab1-9c3d-4c0e-addf-3dfd39d2609e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {}
+      }
+    },
+    {
+      "parameters": {
+        "command": "=nmap  {{ $json.body.myText }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        -368
+      ],
+      "id": "301dc995-2746-48a5-b562-f3ab39499e72",
+      "name": "nmap"
+    },
+    {
+      "parameters": {
+        "command": "=nslookup {{ $json.body.myText }}\n "
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        -176
+      ],
+      "id": "4780dff6-ad72-4721-8706-9f61e6983e59",
+      "name": "nslookup"
+    },
+    {
+      "parameters": {
+        "content": "## Webhook GET nodes\n**GET from the webpage** . ",
+        "height": 592,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1376,
+        -304
+      ],
+      "typeVersion": 1,
+      "id": "5294340c-390c-4785-888f-572bf69f028b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## CMD Operation\n**Performing security tools and merging the result** .",
+        "height": 976,
+        "width": 1056,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1120,
+        -560
+      ],
+      "typeVersion": 1,
+      "id": "ab0f344c-cf7f-41ca-ae38-8434e4e748d8",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## ChatGPT\n**Structuring the result using GPT 4.1 mini** .",
+        "height": 592,
+        "width": 384,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "e56e0cfa-c180-42cc-8ada-f42c94a33e5a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Webhook Response nodes\n**Response to the web page** . ",
+        "height": 592,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        320,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "6ef3fae0-ba22-4004-86d8-69bed7237d04",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "324981dc-c175-4eb3-93b9-c41e30d1f64d",
+              "name": "chatInput",
+              "value": "={{ $json.stdout }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        -80
+      ],
+      "id": "36a572e6-b837-4a61-9a5f-36ba0d26d938",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "command": "=dig +short A {{ $json.body.myText }}\ndig +short NS {{ $json.body.myText }}\ndig +short MX {{ $json.body.myText }}\ndig +short TXT {{ $json.body.myText }}\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        32
+      ],
+      "id": "73816d7c-fdeb-421b-a7bb-cec609d25d49",
+      "name": "dig"
+    },
+    {
+      "parameters": {
+        "command": "=traceroute {{ $json.body.myText }}\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        224
+      ],
+      "id": "a4a7f3b7-c129-490e-9fcd-7ece12a4cbd2",
+      "name": "traceroute"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    A: $json.stdout.split('\\n').filter(x=>x),\n  }\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -832,
+        32
+      ],
+      "id": "b0cdf196-0ecd-4c5d-8d99-103ddd280de6",
+      "name": "json-ouput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allInputs = items.map(item => item.json.chatInput).join(\"\\n\\n\");\nreturn [{\n  json: { combinedText: allInputs }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        -80
+      ],
+      "id": "6f2ec754-4b31-4004-862f-ccaeffdeb86c",
+      "name": "json-combine"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "nmap",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "nslookup",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "dig",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "traceroute",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "nmap": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "nslookup": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "json-combine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "dig": {
+      "main": [
+        [
+          {
+            "node": "json-ouput",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "traceroute": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "json-ouput": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "json-combine": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
