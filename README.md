@@ -87,7 +87,7 @@ webpage/footprint-automation.json
 
 const N8N_WEBHOOK = "https://your-n8n-domain/webhook/sample";
 
-3️⃣ Run Locally
+### 3️⃣ Run Locally
 
 1. Open the file:
 
@@ -100,7 +100,7 @@ const N8N_WEBHOOK = "https://your-n8n-domain/webhook/sample";
 
 4. Wait for the scan to finish — your report will appear below the form.
 
-4️⃣ Deploy Online (Optional)
+### 4️⃣ Deploy Online (Optional)
 
 
 📊 Example Output (Dashboard Includes)
