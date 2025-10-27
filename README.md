@@ -134,7 +134,7 @@ Do not use this tool on domains or systems you don’t own or have permission to
 
 The author (Bharath Raj) is not responsible for misuse or illegal activities.
 
-🧑‍💻 Author
+## 🧑‍💻 Author
 
 Bharath Raj
 (Cybersecurity & AI Enthusiast)
