@@ -89,44 +89,44 @@ const N8N_WEBHOOK = "https://your-n8n-domain/webhook/sample";
 
 3️⃣ Run Locally
 
-Open the file:
+1. Open the file:
 
-webpage/index.html
+    webpage/index.html
 
 
-Enter a domain like example.com
+2. Enter a domain like example.com
 
-Click Submit
+3. Click Submit
 
-Wait for the scan to finish — your report will appear below the form.
+4. Wait for the scan to finish — your report will appear below the form.
 
 4️⃣ Deploy Online (Optional)
 
 
 📊 Example Output (Dashboard Includes)
 
-Domain and IP details
+1. Domain and IP details
 
-Open ports with explanations
+2. Open ports with explanations
 
-DNS records (A, NS, MX, TXT)
+3. DNS records (A, NS, MX, TXT)
 
-Traceroute path + plain-language summary
+4. Traceroute path + plain-language summary
 
-Possible vulnerabilities per service
+5. Possible vulnerabilities per service
 
-Security score with progress bar
+6. Security score with progress bar
 
-Risk category (Good, Low, Moderate, High)
+7. Risk category (Good, Low, Moderate, High)
 
-Actionable security recommendations
+8. Actionable security recommendations
 
-🧩 File Details
+## 🧩 File Details
 File	Description
 index.html	User interface with Matrix animation background. Sends user input (domain) to n8n. Displays HTML report response.
 footprint-automation.json	n8n workflow with full automation logic for scanning, merging results, and using GPT to generate dashboard output.
 
-🔐 Security & Ethics
+## 🔐 Security & Ethics
 
 This project is for educational and ethical hacking purposes only.
 
@@ -137,11 +137,12 @@ The author (Bharath Raj) is not responsible for misuse or illegal activities.
 🧑‍💻 Author
 
 Bharath Raj
-Cybersecurity Enthusiast & Ethical Hacker
+(Cybersecurity & AI Enthusiast)
+
 GitHub: @tbharathraj205
 
 
-🌟 Show Your Support
+## 🌟 Show Your Support
 
 If you like this project:
 
